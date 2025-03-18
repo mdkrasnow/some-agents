@@ -1,0 +1,6 @@
+crewai
+streamlit
+langchain
+pyperclip
+langchain-openai
+openai
