@@ -120,7 +120,8 @@ agent_files = [Path(f).stem for f in glob.glob("agents/*.py")]
 agent_info = {
     "document-refining": "Generate and refine document content with a team of researcher and writer agents.",
     "blog-writing": "Create blog posts with research, writing, and content refinement agents.",
-    "trip-planner": "Plan trips with research, itinerary planning, and local expert agents."
+    "trip-planner": "Plan trips with research, itinerary planning, and local expert agents.",
+    "code-documentation": "Chat with code documentation using semantic search. Provide a documentation URL in your task description."
 }
 
 # Agent selection
@@ -164,7 +165,16 @@ if st.button("Run Agent"):
                         model_utils.prompt_for_openrouter_config = lambda: (api_key, st.session_state.selected_model)
                         
                         # Run the agent with our configuration
-                        result = agent_module.run_agent(task_description)
+                        if selected_agent == "code-documentation":
+                            # Special handling for code-documentation agent which needs a docs_url
+                            # Extract docs_url from task description or use a default
+                            import re
+                            docs_url_match = re.search(r'(http[s]?://\S+)', task_description)
+                            docs_url = docs_url_match.group(1) if docs_url_match else "https://docs.crewai.com"
+                            result = agent_module.run_agent(docs_url=docs_url)
+                        else:
+                            # Default handling for other agents
+                            result = agent_module.run_agent(task_description)
                         
                         # Restore the original config function
                         model_utils.prompt_for_openrouter_config = original_prompt
@@ -179,7 +189,6 @@ if st.button("Run Agent"):
                 st.session_state.output = result
                 st.session_state.edited_output = result
                 st.session_state.show_output = True
-
             
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
